@@ -158,88 +158,6 @@ $(document).ready(function () {
         $('.share-div').removeClass('hidden');
       });
 
-    // With this request we get all the rating changes of the user
-    req2 = $.get(api_url + 'user.rating', { handle: handle }, function (data, status) {
-      
-      if (data.result.length < 1) {
-        err_message('handleDiv', 'No contests');
-        return;
-      }
-      var best = 1e10;
-      var worst = -1e10;
-      var maxUp = 0;
-      var maxDown = 0;
-      var bestCon = '';
-      var worstCon = '';
-      var maxUpCon = '';
-      var maxDownCon = '';
-      var tot = data.result.length;
-
-      data.result.forEach(function (con) {
-        // con is a contest
-        if (con.rank < best) {
-          best = con.rank;
-          bestCon = con.contestId;
-        }
-        if (con.rank > worst) {
-          worst = con.rank;
-          worstCon = con.contestId;
-        }
-        var ch = con.newRating - con.oldRating;
-        if (ch > maxUp) {
-          maxUp = ch;
-          maxUpCon = con.contestId;
-        }
-        if (ch < maxDown) {
-          maxDown = ch;
-          maxDownCon = con.contestId;
-        }
-      });
-
-      // Showing the rating change data in proper places
-      var con_url = 'https://codeforces.com/contest/';
-      $('#contests').removeClass('hidden');
-      $('.handle-text').html(handle);
-      $('#contestCount').html(tot);
-      $('#best').html(
-        best +
-          '<a href="' +
-          con_url +
-          bestCon +
-          '" target="_blank"> (' +
-          bestCon +
-          ') </a>'
-      );
-      $('#worst').html(
-        worst +
-          '<a href="' +
-          con_url +
-          worstCon +
-          '" target="_blank"> (' +
-          worstCon +
-          ') </a>'
-      );
-      $('#maxUp').html(
-        maxUp +
-          '<a href="' +
-          con_url +
-          maxUpCon +
-          '" target="_blank"> (' +
-          maxUpCon +
-          ') </a>'
-      );
-      $('#maxDown').html(
-        maxDown
-          ? maxDown +
-              '<a href="' +
-              con_url +
-              maxDownCon +
-              '" target="_blank"> (' +
-              maxDownCon +
-              ') </a>'
-          : '---'
-      );
-    });
   });
 
   // If there is a handle parameter in the url, we'll put it in the form
@@ -276,138 +194,6 @@ $(document).ready(function () {
 });
 
 function drawCharts() {
-  //Plotting the verdicts chart
-  $('#verdicts').removeClass('hidden');
-  var verTable = [['Verdict', 'Count']];
-  var verSliceColors = [];
-  // beautiful names for the verdicts + colors
-  for (var ver in verdicts) {
-    if (ver == 'OK') {
-      verTable.push(['AC', verdicts[ver]]);
-      verSliceColors.push({ color: '#4CAF50' });
-    } else if (ver == 'WRONG_ANSWER') {
-      verTable.push(['WA', verdicts[ver]]);
-      verSliceColors.push({ color: '#f44336' });
-    } else if (ver == 'TIME_LIMIT_EXCEEDED') {
-      verTable.push(['TLE', verdicts[ver]]);
-      verSliceColors.push({ color: '#2196F3' });
-    } else if (ver == 'MEMORY_LIMIT_EXCEEDED') {
-      verTable.push(['MLE', verdicts[ver]]);
-      verSliceColors.push({ color: '#673AB7' });
-    } else if (ver == 'RUNTIME_ERROR') {
-      verTable.push(['RTE', verdicts[ver]]);
-      verSliceColors.push({ color: '#FF5722' });
-    } else if (ver == 'COMPILATION_ERROR') {
-      verTable.push(['CPE', verdicts[ver]]);
-      verSliceColors.push({ color: '#607D8B' });
-    } else if (ver == 'SKIPPED') {
-      verTable.push(['SKIPPED', verdicts[ver]]);
-      verSliceColors.push({ color: '#EEEEEE' });
-    } else if (ver == 'CLALLENGED') {
-      verTable.push(['CLALLENGED', verdicts[ver]]);
-      verSliceColors.push({ color: '#E91E63' });
-    } else {
-      verTable.push([ver, verdicts[ver]]);
-      verSliceColors.push({});
-    }
-  }
-  verdicts = new google.visualization.arrayToDataTable(verTable);
-  var verOptions = {
-    height: $('#verdicts').width(),
-    title: 'Verdicts of ' + handle,
-    legend: 'none',
-    pieSliceText: 'label',
-    slices: verSliceColors,
-    fontName: 'Roboto',
-    titleTextStyle: titleTextStyle,
-    is3D: true
-  };
-  var verChart = new google.visualization.PieChart(document.getElementById('verdicts'));
-  verChart.draw(verdicts, verOptions);
-
-  //Plotting the languages chart
-  var colors = [
-    '#f44336',
-    '#E91E63',
-    '#9C27B0',
-    '#673AB7',
-    '#2196F3',
-    '#009688',
-    '#8BC34A',
-    '#CDDC39',
-    '#FFC107',
-    '#FF9800',
-    '#FF5722',
-    '#795548',
-    '#607D8B',
-    '#E65100',
-    '#827717',
-    '#004D40',
-    '#1A237E',
-    '#6200EA',
-    '#3F51B5',
-    '#F50057',
-    '#304FFE',
-    '#b71c1c'
-  ];
-
-  $('#langs').removeClass('hidden');
-  var langTable = [['Language', 'Count']];
-  for (var lang in langs) {
-    langTable.push([lang, langs[lang]]);
-  }
-  langs = new google.visualization.arrayToDataTable(langTable);
-  var langOptions = {
-    height: $('#langs').width(),
-    title: 'Languages of ' + handle,
-    legend: 'none',
-    pieSliceText: 'label',
-    fontName: 'Roboto',
-    titleTextStyle: titleTextStyle,
-    is3D: true,
-    colors: colors.slice(0, Math.min(colors.length, langs.getNumberOfRows()))
-  };
-  var langChart = new google.visualization.PieChart(document.getElementById('langs'));
-  langChart.draw(langs, langOptions);
-
-  //the tags chart
-  $('#tags').removeClass('hidden');
-  var tagTable = [];
-  for (var tag in tags) {
-    tagTable.push([tag + ': ' + tags[tag], tags[tag]]);
-  }
-  tagTable.sort(function (a, b) {
-    return b[1] - a[1];
-  });
-  tags = new google.visualization.DataTable();
-  tags.addColumn('string', 'Tag');
-  tags.addColumn('number', 'solved');
-  tags.addRows(tagTable);
-  var tagOptions = {
-    width: Math.max(600, $('#tags').width()),
-    height: Math.max(600, $('#tags').width()) * 0.75,
-    chartArea: { width: '80%', height: '70%' },
-    title: 'Tags of ' + handle,
-    pieSliceText: 'none',
-    legend: {
-      position: 'right',
-      alignment: 'center',
-      textStyle: {
-        fontSize: 12,
-        fontName: 'Roboto'
-      }
-    },
-    pieHole: 0.5,
-    tooltip: {
-      text: 'percentage'
-    },
-    fontName: 'Roboto',
-    titleTextStyle: titleTextStyle,
-    colors: colors.slice(0, Math.min(colors.length, tags.getNumberOfRows()))
-  };
-  var tagChart = new google.visualization.PieChart(document.getElementById('tags'));
-  tagChart.draw(tags, tagOptions);
-
   //Plotting levels
   $('#levels').removeClass('hidden');
   var levelTable = [];
@@ -466,33 +252,34 @@ function drawCharts() {
   );
   if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
 
-  /* heatmap */
-  $('#heatmapCon').removeClass('hidden');
-  $('#heatMapHandle').html(handle);
-  var heatmapTable = [];
-  for (var d in heatmap) {
-    heatmapTable.push([new Date(parseInt(d)), heatmap[d]]);
+  //Plotting levels
+  $('#languages').removeClass('hidden');
+  var langBar = [];
+  for (var lang in langs) {
+    langBar.push([lang, langs[lang]]);
   }
-  heatmapData = new google.visualization.DataTable();
-  heatmapData.addColumn({ type: 'date', id: 'Date' });
-  heatmapData.addColumn({ type: 'number', id: 'Submissions' });
-  heatmapData.addRows(heatmapTable);
-
-  heatmap = new google.visualization.Calendar(document.getElementById('heatmapDiv'));
-  var heatmapOptions = {
-    height: years * 140 + 30,
-    width: Math.max($('#heatmapCon').width(), 900),
+  langBar.sort(function (a, b) {
+    if (a[0] > b[0]) return -1;
+    else return 1;
+  });
+  langs = new google.visualization.DataTable();
+  langs.addColumn('string', 'Language');
+  langs.addColumn('number', 'Solved');
+  langs.addRows(langBar);
+  var langOptions = {
+    width: Math.max($('#languages').width(), langs.getNumberOfRows() * 50),
+    height: 300,
+    title: 'Languages of ' + handle,
+    legend: 'none',
     fontName: 'Roboto',
     titleTextStyle: titleTextStyle,
-    colorAxis: {
-      minValue: 0,
-      colors: ['#ffffff', '#0027ff', '#00127d']
-    },
-    calendar: {
-      cellSize: 15
-    }
+    vAxis: { format: '0' },
+    colors: ['#3F51B5']
   };
-  heatmap.draw(heatmapData, heatmapOptions);
+  var langChart = new google.visualization.ColumnChart(
+    document.getElementById('languages')
+  );
+  if (langBar.length > 1) levelChart.draw(langs, langOptions);
 
   //parse all the solved problems and extract some numbers about the solved problems
   var tried = 0;

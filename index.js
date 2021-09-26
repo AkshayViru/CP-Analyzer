@@ -50,7 +50,7 @@ $(document).ready(function () {
       // parsing all the submission and saving useful data. Don't remember why from the back
       for (var i = data.result.length - 1; i >= 0; i--) {
         var sub = data.result[i];
-
+        
         // creating unique key for problem {contestID + problem name + problem rating}
         var rating;
         if (sub.problem.rating === undefined) {
@@ -88,14 +88,14 @@ $(document).ready(function () {
           problems[problemId] = {
             problemlink: sub.contestId + '-' + sub.problem.index, // link of problem
             attempts: 1,
-            solved: 0 // We also want to save how many submission got AC, a better name would have been number_of_ac
+            solved: 0, // We also want to save how many submission got AC, a better name would have been number_of_ac
+            topics: sub.problem.tags
           };
         }
 
         if (sub.verdict == 'OK') {
           problems[problemId].solved++;
         }
-
         // modifying level, rating, and tag counter on first AC.
         if (problems[problemId].solved === 1 && sub.verdict == 'OK') {
           sub.problem.tags.forEach(function (t) {
@@ -194,34 +194,6 @@ $(document).ready(function () {
 });
 
 function drawCharts() {
-  //Plotting levels
-  $('#levels').removeClass('hidden');
-  var levelTable = [];
-  for (var level in levels) {
-    levelTable.push([level, levels[level]]);
-  }
-  levelTable.sort(function (a, b) {
-    if (a[0] > b[0]) return -1;
-    else return 1;
-  });
-  levels = new google.visualization.DataTable();
-  levels.addColumn('string', 'Level');
-  levels.addColumn('number', 'solved');
-  levels.addRows(levelTable);
-  var levelOptions = {
-    width: Math.max($('#levels').width(), levels.getNumberOfRows() * 50),
-    height: 300,
-    title: 'Levels of ' + handle,
-    legend: 'none',
-    fontName: 'Roboto',
-    titleTextStyle: titleTextStyle,
-    vAxis: { format: '0' },
-    colors: ['#3F51B5']
-  };
-  var levelChart = new google.visualization.ColumnChart(
-    document.getElementById('levels')
-  );
-  if (levelTable.length > 1) levelChart.draw(levels, levelOptions);
 
   //Plotting ratings
   $('#ratings').removeClass('hidden');
@@ -269,7 +241,7 @@ function drawCharts() {
   var langOptions = {
     width: Math.max($('#languages').width(), langs.getNumberOfRows() * 50),
     height: 300,
-    title: 'Languages of ' + handle,
+    title: 'Languages: problems solved in each language by ' + handle,
     legend: 'none',
     fontName: 'Roboto',
     titleTextStyle: titleTextStyle,
@@ -279,71 +251,42 @@ function drawCharts() {
   var langChart = new google.visualization.ColumnChart(
     document.getElementById('languages')
   );
-  if (langBar.length > 1) levelChart.draw(langs, langOptions);
+  if (langBar.length > 1) langChart.draw(langs, langOptions);
 
   //parse all the solved problems and extract some numbers about the solved problems
   var tried = 0;
-  var solved = 0;
-  var maxAttempt = 0;
-  var maxAttemptProblem = '';
-  var maxAc = '';
-  var maxAcProblem = '';
   var unsolved = [];
-  var solvedWithOneSub = 0;
+  var unsolved_dict = {};
   for (var p in problems) {
     tried++;
-    if (problems[p].solved > 0) solved++;
-    if (problems[p].solved === 0) unsolved.push(problems[p].problemlink);
-
-    if (problems[p].attempts > maxAttempt) {
-      maxAttempt = problems[p].attempts;
-      maxAttemptProblem = problems[p].problemlink;
+    if (problems[p].solved === 0) {
+      unsolved.push(problems[p].problemlink);
+      problem_topics = problems[p].topics;
+      for(var ind in problem_topics){
+        if(unsolved_dict[problem_topics[ind]] === undefined){
+          unsolved_dict[problem_topics[ind]] = [];
+        }
+        unsolved_dict[problem_topics[ind]].push(problems[p].problemlink);
+      }
     }
-    if (problems[p].solved > maxAc) {
-      maxAc = problems[p].solved;
-      maxAcProblem = problems[p].problemlink;
-    }
-
-    if (problems[p].solved > 0 && problems[p].attempts == 1) solvedWithOneSub++;
   }
+  
+  console.log("Unsolved Dict:", unsolved_dict);
 
-  $('#numbers').removeClass('hidden');
   $('#unsolvedCon').removeClass('hidden');
-  $('.handle-text').html(handle);
-  $('#tried').html(tried);
-  $('#solved').html(solved);
-  $('#maxAttempt').html(
-    maxAttempt +
-      '<a href="' +
-      get_url(maxAttemptProblem) +
-      '" target="blank" > (' +
-      maxAttemptProblem +
-      ') </a>'
-  );
-  if (maxAc > 1)
-    $('#maxAc').html(
-      maxAc +
-        '<a href="' +
-        get_url(maxAcProblem) +
-        '" target="blank" > (' +
-        maxAcProblem +
-        ') </a>'
-    );
-  else $('#maxAc').html(solved ? 1 : 0);
-  $('#averageAttempt').html((totalSub / solved).toFixed(2));
-  $('#solvedWithOneSub').html(
-    solvedWithOneSub +
-      ' (' +
-      (solved ? ((solvedWithOneSub / solved) * 100).toFixed(2) : 0) +
-      '%)'
-  );
-
-  unsolved.forEach(function (p) {
-    var url = get_url(p);
-    $('#unsolvedList').append(
-      '<div><a href="' + url + '" target="_blank" class="lnk">' + p + '</a></div>'
-    );
-  });
+  us = ''
+  for(topic in unsolved_dict){
+    us = us + topic + ': <div>';
+    for(var ind in unsolved_dict[topic]){
+      if(ind == 20)
+        break;
+      p = unsolved_dict[topic][ind];
+      var url = get_url(p);
+      us = us + '<a href="' + url + '" target="_blank" class="lnk">' + p + '</a> &nbsp;&nbsp;';
+    }
+    us = us + '</div></br>';
+  }
+  $('#unsolvedList').append(us);
 }
 
 // reset all data

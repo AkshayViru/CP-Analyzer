@@ -8,9 +8,6 @@ var levels = {};
 var ratings = {};
 var problems = {};
 var totalSub = 0;
-var heatmap = {};
-var heatmapData = {};
-var years = 0;
 
 var req1, req2;
 
@@ -125,20 +122,6 @@ $(document).ready(function () {
           langs[sub.programmingLanguage] = 1;
         else langs[sub.programmingLanguage]++;
 
-        //updating the heatmap
-        var date = new Date(sub.creationTimeSeconds * 1000); // submission date
-        date.setHours(0, 0, 0, 0);
-        if (heatmap[date.valueOf()] === undefined) heatmap[date.valueOf()] = 1;
-        else heatmap[date.valueOf()]++;
-        totalSub = data.result.length;
-
-        // how many years are there between first and last submission
-        years =
-          new Date(data.result[0].creationTimeSeconds * 1000).getYear() -
-          new Date(
-            data.result[data.result.length - 1].creationTimeSeconds * 1000
-          ).getYear();
-        years = Math.abs(years) + 1;
       }
 
       // finally draw the charts if google charts is already loaded,
@@ -169,28 +152,6 @@ $(document).ready(function () {
   }
   $('#handleDiv').removeClass('hidden');
 
-  // this is to update the heatmap when the form is submitted, contributed
-  $('#heatmapCon input').keypress(function (e) {
-    var value = $(this).val();
-    //Enter pressed
-    if (e.which == 13 && value >= 0 && value <= 999) {
-      var heatmapOptions = {
-        height: years * 140 + 30,
-        width: Math.max($('#heatmapCon').width(), 900),
-        fontName: 'Roboto',
-        titleTextStyle: titleTextStyle,
-        colorAxis: {
-          minValue: 0,
-          maxValue: value,
-          colors: ['#ffffff', '#0027ff', '#00127d']
-        },
-        calendar: {
-          cellSize: 15
-        }
-      };
-      heatmap.draw(heatmapData, heatmapOptions);
-    }
-  });
 });
 
 function drawCharts() {
@@ -224,7 +185,7 @@ function drawCharts() {
   );
   if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
 
-  //Plotting levels
+  //Plotting languages
   $('#languages').removeClass('hidden');
   var langBar = [];
   for (var lang in langs) {
@@ -253,6 +214,8 @@ function drawCharts() {
   );
   if (langBar.length > 1) langChart.draw(langs, langOptions);
 
+
+  //Char for unsolved problems
   //parse all the solved problems and extract some numbers about the solved problems
   var tried = 0;
   var unsolved = [];
@@ -334,20 +297,6 @@ function getParameterByName(name, url) {
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-// Opens a share window when the share button is clicked
-function fbShareResult() {
-  var url = window.location.href + '?handle=' + handle; // generation share url
-  var top = screen.height / 2 - 150;
-  var left = screen.width / 2 - 300;
-  window.open(
-    'https://facebook.com/sharer/sharer.php?u=' + escape(url),
-    'Share',
-    'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600,top=' +
-      top +
-      ',left=' +
-      left
-  );
-}
 
 // shows am error message in the input form
 // Needs the div name of the input widget

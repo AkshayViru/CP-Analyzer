@@ -167,6 +167,43 @@ $(document).ready(function () {
   }
   $('#handleDiv').removeClass('hidden');
 
+  // Plotting ratings based on the tag selected
+  $('#tagForm').submit(function (e) {
+    console.log(e)
+    e.preventDefault();
+
+    tag = $('#topicwise').val()
+    $('#tagRating').removeClass('hidden');
+
+    ratings = tagsToRatings[tag]
+    var ratingTable = [];
+    for (var rating in ratings) {
+      ratingTable.push([rating, ratings[rating]]);
+    }
+    ratingTable.sort(function (a, b) {
+      if (parseInt(a[0]) > parseInt(b[0])) return -1;
+      else return 1;
+    });
+    ratings = new google.visualization.DataTable();
+    ratings.addColumn('string', 'Rating');
+    ratings.addColumn('number', 'solved');
+    ratings.addRows(ratingTable);
+    var ratingOptions = {
+      width: Math.max($('#tagRating').width(), ratings.getNumberOfRows() * 50),
+      height: 300,
+      title: tag +' problem ratings of ' + handle,
+      legend: 'none',
+      fontName: 'Roboto',
+      titleTextStyle: titleTextStyle,
+      vAxis: { format: '0' },
+      colors: ['#3F51B5']
+    };
+    var ratingChart = new google.visualization.ColumnChart(
+      document.getElementById('tagRating')
+    );
+    if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
+  });
+
 });
 
 function drawCharts() {
@@ -200,42 +237,17 @@ function drawCharts() {
   );
   if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
 
-  //Plotting ratings by tags
+  //Setup dropdown for topic selection
+  $('#topicwiseOptions').removeClass('hidden');
   $('#topicwise').removeClass('hidden');
   const topicwiseRoot = document.getElementById("topicwise");
   for (var key in tagsToRatings){
-    ratings = tagsToRatings[key]
-    var ratingTable = [];
-    for (var rating in ratings) {
-      ratingTable.push([rating, ratings[rating]]);
-    }
-    ratingTable.sort(function (a, b) {
-      if (parseInt(a[0]) > parseInt(b[0])) return -1;
-      else return 1;
-    });
-    ratings = new google.visualization.DataTable();
-    ratings.addColumn('string', 'Rating');
-    ratings.addColumn('number', 'solved');
-    ratings.addRows(ratingTable);
-    var ratingOptions = {
-      width: Math.max($('#ratings').width(), ratings.getNumberOfRows() * 50),
-      height: 300,
-      title: key +' problem ratings of ' + handle,
-      legend: 'none',
-      fontName: 'Roboto',
-      titleTextStyle: titleTextStyle,
-      vAxis: { format: '0' },
-      colors: ['#3F51B5']
-    };
-    const childDiv = document.createElement("div");
-    childDiv.id = key;
-    topicwiseRoot.append(childDiv)
-    var ratingChart = new google.visualization.ColumnChart(
-      document.getElementById(key)
-    );
-    if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
+    const optionChild = document.createElement("option");
+    optionChild.value = key
+    optionChild.text = key
+    topicwiseRoot.append(optionChild)
   }
-
+  
   //Plotting languages
   $('#languages').removeClass('hidden');
   var langBar = [];

@@ -8,6 +8,7 @@ var levels = {};
 var ratings = {};
 var problems = {};
 var totalSub = 0;
+var tagsToRatings = {};
 
 var req1, req2;
 
@@ -98,6 +99,20 @@ $(document).ready(function () {
           sub.problem.tags.forEach(function (t) {
             if (tags[t] === undefined) tags[t] = 1;
             else tags[t]++;
+            if (sub.problem.rating) {
+              ratingVal = sub.problem.rating
+              if(tagsToRatings[t] == undefined){
+                tagsToRatings[t] = {}
+                tagsToRatings[t][ratingVal] = 1
+              }
+              else{
+                if (tagsToRatings[t][ratingVal] === undefined) {
+                  tagsToRatings[t][ratingVal] = 1;
+                } else {
+                  tagsToRatings[t][ratingVal]++;
+                }
+              }
+            }
           });
 
           if (levels[sub.problem.index[0]] === undefined)
@@ -185,6 +200,42 @@ function drawCharts() {
   );
   if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
 
+  //Plotting ratings by tags
+  $('#topicwise').removeClass('hidden');
+  const topicwiseRoot = document.getElementById("topicwise");
+  for (var key in tagsToRatings){
+    ratings = tagsToRatings[key]
+    var ratingTable = [];
+    for (var rating in ratings) {
+      ratingTable.push([rating, ratings[rating]]);
+    }
+    ratingTable.sort(function (a, b) {
+      if (parseInt(a[0]) > parseInt(b[0])) return -1;
+      else return 1;
+    });
+    ratings = new google.visualization.DataTable();
+    ratings.addColumn('string', 'Rating');
+    ratings.addColumn('number', 'solved');
+    ratings.addRows(ratingTable);
+    var ratingOptions = {
+      width: Math.max($('#ratings').width(), ratings.getNumberOfRows() * 50),
+      height: 300,
+      title: key +' problem ratings of ' + handle,
+      legend: 'none',
+      fontName: 'Roboto',
+      titleTextStyle: titleTextStyle,
+      vAxis: { format: '0' },
+      colors: ['#3F51B5']
+    };
+    const childDiv = document.createElement("div");
+    childDiv.id = key;
+    topicwiseRoot.append(childDiv)
+    var ratingChart = new google.visualization.ColumnChart(
+      document.getElementById(key)
+    );
+    if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
+  }
+
   //Plotting languages
   $('#languages').removeClass('hidden');
   var langBar = [];
@@ -234,8 +285,6 @@ function drawCharts() {
     }
   }
   
-  console.log("Unsolved Dict:", unsolved_dict);
-
   $('#unsolvedCon').removeClass('hidden');
   us = ''
   for(topic in unsolved_dict){

@@ -7,6 +7,7 @@ var tags = {};
 var levels = {};
 var ratings = {};
 var problems = {};
+var topicStats = {};
 var totalSub = 0;
 
 var req1, req2;
@@ -48,6 +49,7 @@ $(document).ready(function () {
       for (var i = data.result.length - 1; i >= 0; i--) {
         var sub = data.result[i];
         
+        // console.log(sub.verdict);
         // creating unique key for problem {contestID + problem name + problem rating}
         var rating;
         if (sub.problem.rating === undefined) {
@@ -121,7 +123,25 @@ $(document).ready(function () {
         if (langs[sub.programmingLanguage] === undefined)
           langs[sub.programmingLanguage] = 1;
         else langs[sub.programmingLanguage]++;
-
+        for(var tag in sub.problem.tags){
+          var topic = sub.problem.tags[tag];
+          // console.log("tag = ", topic);
+          if(topicStats[topic] === undefined){
+            topicStats[topic] = {
+              OK: 0,
+              WRONG_ANSWER: 0,
+              TIME_LIMIT_EXCEEDED: 0,
+              RUNTIME_ERROR: 0,
+              COMPILATION_ERROR: 0,
+              MEMORY_LIMIT_EXCEEDED: 0
+            }
+          }
+          var verdict = sub.verdict;
+          if(topicStats[topic][verdict] !== undefined){
+            // console.log("yo", topicStats[topic].verdict);
+            topicStats[topic][verdict]++;
+          }
+        }
       }
 
       // finally draw the charts if google charts is already loaded,
@@ -154,6 +174,7 @@ $(document).ready(function () {
 
 });
 
+
 function drawCharts() {
 
   //Plotting ratings
@@ -184,6 +205,43 @@ function drawCharts() {
     document.getElementById('ratings')
   );
   if (ratingTable.length > 1) ratingChart.draw(ratings, ratingOptions);
+
+  //Plotting Topic wise
+  $('#topicStats').removeClass('hidden');
+  var topicStatsTable = [];
+  for (var tp in topicStats) {
+    // console.log("tp, topicStats[tp] = ", tp, topicStats[tp].OK);
+    topicStatsTable.push([tp, topicStats[tp].OK, topicStats[tp].WRONG_ANSWER, topicStats[tp].TIME_LIMIT_EXCEEDED, topicStats[tp].RUNTIME_ERROR, topicStats[tp].COMPILATION_ERROR, topicStats[tp].MEMORY_LIMIT_EXCEEDED]);
+  }
+  topicStatsDataTable = new google.visualization.DataTable();
+  topicStatsDataTable.addColumn('string', 'Topic');
+  topicStatsDataTable.addColumn('number', 'OK');
+  topicStatsDataTable.addColumn('number', 'WRONG_ANSWER');
+  topicStatsDataTable.addColumn('number', 'TIME_LIMIT_EXCEEDED');
+  topicStatsDataTable.addColumn('number', 'RUNTIME_ERROR');
+  topicStatsDataTable.addColumn('number', 'COMPILATION_ERROR');
+  topicStatsDataTable.addColumn('number', 'MEMORY_LIMIT_EXCEEDED');
+  topicStatsDataTable.addRows(topicStatsTable);
+  var TopicOptions = {
+    height: Math.max($('#topicStats').height(), topicStatsDataTable.getNumberOfRows() * 40),
+    width: 1000,
+    title: 'Topic wise submissions stats of ' + handle,
+    legend: { position: 'top', maxLines: 4},
+    fontName: 'Roboto',
+    titleTextStyle: titleTextStyle,
+    vAxis: { format: '0' },
+    colors: ['#3F51B5', "#800000", '#FA8072', '#556B2F' , '#A0522D', '708090'],
+    bar: {groupWidth: '100%'},
+    animation: {
+        duration: 1500,
+        easing: 'linear',
+        startup: true
+    }
+  };
+  var topicChart = new google.visualization.BarChart(
+    document.getElementById('topicStats')
+  );
+  if (topicStatsTable.length > 1) topicChart.draw(topicStatsDataTable, TopicOptions);
 
   //Plotting languages
   $('#languages').removeClass('hidden');
@@ -234,7 +292,7 @@ function drawCharts() {
     }
   }
   
-  console.log("Unsolved Dict:", unsolved_dict);
+  // console.log("Unsolved Dict:", unsolved_dict);
 
   $('#unsolvedCon').removeClass('hidden');
   us = ''
@@ -265,6 +323,7 @@ function resetData() {
   totalSub = 0;
   heatmap = {};
   ratings = {};
+  topicStats = {};
   $('#mainSpinner').addClass('is-active');
   $('.to-clear').empty();
   $('.to-hide').addClass('hidden');

@@ -66,3 +66,13 @@ a {
 .content {
     max-width: 1080px;
 }
+
+.dropdown {
+  height: 10vh;
+  width: 60%;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+

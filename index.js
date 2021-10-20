@@ -215,7 +215,12 @@ $(document).ready(function () {
       fontName: 'Roboto',
       titleTextStyle: titleTextStyle,
       vAxis: { format: '0' },
-      colors: ['#3F51B5']
+      colors: ['#3F51B5'],
+      animation: {  
+          duration: 500, 
+          easing: 'linear', 
+          startup: true 
+      } 
     };
     var ratingChart = new google.visualization.ColumnChart(
       document.getElementById('tagRating')
@@ -240,22 +245,26 @@ $(document).ready(function () {
     topicStatsDataTable.addColumn('number', 'MEMORY_LIMIT_EXCEEDED'); 
     topicStatsDataTable.addRows(topicStatsTable); 
     var TopicOptions = {  
-      height: Math.max($('#topicStats').height(), topicStatsDataTable.getNumberOfRows() * 40),  
-      width: 1000,  
+      // height: Math.max($('#topicStats').height(), topicStatsDataTable.getNumberOfRows() * 40),  
+      // width: 500,
+      width: Math.max($('#topicStats').width(), topicStatsDataTable.getNumberOfRows() * 50),
+      height: 300,
+  
       title: 'Topic wise submissions stats of ' + handle, 
-      legend: { position: 'top', maxLines: 4},  
+      legend: 'none',  
       fontName: 'Roboto', 
       titleTextStyle: titleTextStyle, 
       vAxis: { format: '0' }, 
-      colors: ['#3F51B5', "#800000", '#FA8072', '#556B2F' , '#A0522D', '708090'], 
-      bar: {groupWidth: '100%'},  
+      // colors: ['#3F51B5', "#800000", '#FA8072', '#556B2F' , '#A0522D', '708090'],
+      colors: ["#e7717d", "#c2cad0", "#c2b9b0", "#7e685a", "#afd275"], 
+      // bar: {groupWidth: '80%'},  
       animation: {  
-          duration: 1500, 
+          duration: 500, 
           easing: 'linear', 
           startup: true 
       } 
     };  
-    var topicChart = new google.visualization.BarChart( 
+    var topicChart = new google.visualization.ColumnChart( 
       document.getElementById('topicStats') 
     );  
 
@@ -291,7 +300,12 @@ function drawCharts() {
     fontName: 'Roboto',
     titleTextStyle: titleTextStyle,
     vAxis: { format: '0' },
-    colors: ['#3F51B5']
+    colors: ['#3F51B5'],
+    animation: {  
+          duration: 500, 
+          easing: 'linear', 
+          startup: true 
+      } 
   };
   var ratingChart = new google.visualization.ColumnChart(
     document.getElementById('ratings')
@@ -331,7 +345,12 @@ function drawCharts() {
     fontName: 'Roboto',
     titleTextStyle: titleTextStyle,
     vAxis: { format: '0' },
-    colors: ['#3F51B5']
+    colors: ['#3F51B5'],
+    animation: {  
+          duration: 500, 
+          easing: 'linear', 
+          startup: true 
+      } 
   };
   var langChart = new google.visualization.ColumnChart(
     document.getElementById('languages')

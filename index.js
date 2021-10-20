@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 var api_url = 'https://codeforces.com/api/';
 var handle = '';
 

@@ -44,6 +44,10 @@ a {
     text-decoration: none;
 }/* only for index */
 
+#topicwiseOptions {
+    padding: 30px 20px 50px 50px;
+}
+
 #unsolvedCon {
     padding: 30px 20px 50px 50px;
 }

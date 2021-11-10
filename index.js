@@ -10,6 +10,7 @@ var problems = {};
 var totalSub = 0;
 var topicStats = {};
 var tagsToRatings = {};
+var unsolved_dict = {};
 
 var req1, req2;
 
@@ -274,6 +275,10 @@ $(document).ready(function () {
     
     });
 
+  $('#categoryWise').change(function (e) {
+    changeUnsolvedCategory();
+  });
+
 });
 
 function drawCharts() {
@@ -362,7 +367,6 @@ function drawCharts() {
   //parse all the solved problems and extract some numbers about the solved problems
   var tried = 0;
   var unsolved = [];
-  var unsolved_dict = {};
   for (var p in problems) {
     tried++;
     if (problems[p].solved === 0) {
@@ -376,11 +380,20 @@ function drawCharts() {
       }
     }
   }
-  
+
+  $('#categoryWise').removeClass('hidden');
+  $('#unsolvedCategoryForm').removeClass('hidden');
   $('#unsolvedCon').removeClass('hidden');
-  us = ''
+  const categoryWiseRoot = document.getElementById("categoryWise");
+  for (var topic in unsolved_dict){
+    const optionChild = document.createElement("option");
+    optionChild.value = topic
+    optionChild.text = topic
+    categoryWiseRoot.append(optionChild)
+  }
+
+  us = '<div>';
   for(topic in unsolved_dict){
-    us = us + topic + ': <div>';
     for(var ind in unsolved_dict[topic]){
       if(ind == 20)
         break;
@@ -389,7 +402,23 @@ function drawCharts() {
       us = us + '<a href="' + url + '" target="_blank" class="lnk">' + p + '</a> &nbsp;&nbsp;';
     }
     us = us + '</div></br>';
+    break;
   }
+  $('#unsolvedList').append(us);
+}
+
+function changeUnsolvedCategory() {
+  topic = $('#categoryWise').val();
+  $('#unsolvedList').empty();;
+  us = '<div>';
+  for(var ind in unsolved_dict[topic]){
+    if(ind == 20)
+      break;
+    p = unsolved_dict[topic][ind];
+    var url = get_url(p);
+    us = us + '<a href="' + url + '" target="_blank" class="lnk">' + p + '</a> &nbsp;&nbsp;';
+  }
+  us = us + '</div></br>';
   $('#unsolvedList').append(us);
 }
 
@@ -408,6 +437,7 @@ function resetData() {
   ratings = {};
   topicStats = {};
   tagsToRatings = {};
+  unsolved_dict = {};
   $('#mainSpinner').addClass('is-active');
   $('.to-clear').empty();
   $('.to-hide').addClass('hidden');
